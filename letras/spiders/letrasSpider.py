@@ -18,41 +18,47 @@ class LetrasspiderSpider(Spider):
         yield req
 
     def todos_artistas(self, response):
-        todos_artistas = response.xpath('.//li/a') 
-        link = ''
-        nome = ''
+        todos_artistas = response.css('.cnt-list--col3 a')
+        artista = {}
         for item in todos_artistas:
             nome = item.xpath('text()').get()
-            link = self.start_urls[0] + item.xpath('@href').get() + 'discografia'
+            link = self.start_urls[0] + item.css('::attr(href)').get()
 
-            album = Request(url=link, callback=self.albuns)
-            
-            yield {
-                'artista' : {
-                    'nome' : nome,
-                    'album' : album
-                }
-            }
+            req = Request(url=link, callback=self.disc_parse)
+            artista['nome'] = nome
+            req.meta['artista'] = artista
+            yield req
+
+    def disc_parse(self, response):
+        disc = self.start_urls[0] + response.css('.h3 a ::attr(href)').get()
+        yield {
+            Request(url=disc, callback=self.albuns)
+        }
 
     def albuns(self, response):
-        res = response.xpath('//*[@id="cnt_top"]/div[2]/div[3]/div[1]/div/div/div')
-        albuns = res.xpath('./h4/a/text()').extract()
-        lancamentos = res.xpath('./span/text()').extract()
-        links_musica = res.xpath('../ol/li[not(contains(@class, "contrib"))]/a/@href')
+        albuns = response.css('.cnt-discografia_cd')
+        lancamentos = albuns.xpath('./span/text()').extract_first()
+        links_musica = albuns.xpath('../ol/li[not(contains(@class, "contrib"))]/a/@href')
+
+        yield { 
+            'albuns' : albuns,
+            'lancamentos' : lancamentos
+        }
+
+        album = {}
 
         for titulo, ano, link in zip(albuns, lancamentos, links_musica):
             url = self.start_urls[0] + link
-            musica = Request(url=url, callback=self.musicas)
+            req = Request(url=url, callback=self.musicas)
 
-            yield {
-                'album' : {
-                    'titulo' : titulo,
-                    'ano' : ano,
-                    'musicas' : musica
-                }
-            }
+            album['titulo'] = titulo
+            album['ano'] = ano
 
-    def musicas(self, response):
+            req.meta['album'] = album
+
+            yield req
+
+    '''def musicas(self, response):
         info_trad = response.css('div.letra-menu > a')
         trad = info_trad.xpath('./@data-tt')
 
@@ -72,3 +78,5 @@ class LetrasspiderSpider(Spider):
                      
         else:
             yield '' 
+
+            '''
