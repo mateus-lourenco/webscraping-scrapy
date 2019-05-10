@@ -33,10 +33,9 @@ class LetrasspiderSpider(Spider):
             yield request
 
     def artistas_validos(self, response):
-        artista_sel = response.css('.h3 a')
-        disc = artista_sel.css('::text').get()
-        if disc is not None and disc.lower() == 'discografia':
-            url = self.start_urls[0] + artista_sel.css('::attr(href)').get()
+        disc = response.css('.artista-albuns .cnt-more').get()
+        if disc is not None:
+            url = self.start_urls[0] + response.css('.h3 a ::attr(href)').get()
             nome = response.css('.cnt-head_title h1 ::text').get()
             
             request = Request(
