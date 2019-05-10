@@ -13,6 +13,7 @@ BOT_NAME = 'letras'
 
 SPIDER_MODULES = ['letras.spiders']
 NEWSPIDER_MODULE = 'letras.spiders'
+#LOG_ENABLED = False
 
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent

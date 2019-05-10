@@ -35,58 +35,52 @@ class LetrasspiderSpider(Spider):
     def artistas_validos(self, response):
         artista_sel = response.css('.h3 a')
         disc = artista_sel.css('::text').get()
-        artista = {}
-        if disc != None and disc.lower() == 'discografia':
+        if disc is not None and disc.lower() == 'discografia':
             url = self.start_urls[0] + artista_sel.css('::attr(href)').get()
-            artista['nome'] = response.css('.cnt-head_title h1 ::text').get()
+            nome = response.css('.cnt-head_title h1 ::text').get()
+            
             request = Request(
                         url=url, 
                         callback=self.albuns
                     )
 
-            request.meta['artista'] = artista
-
+            request.meta['nome'] = nome
             yield request
 
     def albuns(self, response):
-        albuns = response.css('.cnt-discografia_cd')
+        albuns = response.css('.cnt-discografia_cd')                  
         album_dic = {}
         for album in albuns:
-            album_dic['titulo_album'] = album.css('.cnt-discografia_info a ::text').get()
-            album_dic['ano'] = self.ano(album.css('.cnt-discografia_info span ::text').get())
-            album_dic['titulo_musica'] = album.css('li:not([class^="contrib"]) span ::text').get()
+            url_musica = album.css('li:not([class^="contrib"]) ::attr(href)').get()
+            album_dic = {
+                    'nome': response.meta['nome'],
+                    'album' : {   
+                        'titulo_album' : album.css('.cnt-discografia_info a ::text').get(),
+                        'ano' : self.ano(album.css('.cnt-discografia_info span ::text').get())                    }
+                }
+            request = Request(
+                url=self.start_urls[0] + url_musica,
+                callback=self.musicas
+            )           
+            request.meta['artista'] = album_dic
 
-            yield album_dic
-            '''request = Request(
-                url= self.start_urls[0] + album.css('li:not([class^="contrib"]) ::attr(href)').get(),
-                callback= self.musicas
-            )
+            yield request
 
-            request.meta['artista']['album'] = album_dic
+    def musicas(self, response):
+        trad = response.css('.letra-menu a ::attr(data-tt)').get()
 
-            yield request'''
-
-    '''def musicas(self, response):
-        info_trad = response.css('div.letra-menu > a')
-        trad = info_trad.xpath('./@data-tt')
-
-        if(trad != 'Tradução'):
-            info_titulo = response.css('div.cnt-head_title > h1')
-            titulo = info_titulo.xpath('./text()').get()
-            info_compositor = response.css('div.letra-info_comp')
-            compositor = info_compositor.xpath('./text()').get()
-            info_letra = response.css('div.cnt-letra > p')
-            letra = ''.join(frase + '\r\n' for frase in info_letra.xpath('./text()').getall())
-
-            yield {
-                'titulo' : titulo,
-                'compositor': compositor,
-                'letra' : letra
+        musica = {}
+        if(trad is None):
+            musica = {
+                'artista': response.meta['artista']['nome'],
+                'album': response.meta['artista']['album'],
+                'titulo' : response.css('.cnt-head_title h1 ::text').get(),
+                'compositor(es)' : response.css('.letra-info_comp ::text').get(),
+                'letra' : ''.join(verso + '\r\n' for verso in response.css('div.cnt-letra p ::text').getall())
             }
-                     
-        else:
-            yield '' 
 
-            '''
+            yield musica
+
+
     def ano(self, text):
         return re.match(r'.*([1-2][0-9]{3})', text).group(1)
