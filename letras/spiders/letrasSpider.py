@@ -12,7 +12,7 @@ class LetrasSpider(Spider):
     ]
 
     def parse(self, response):
-        genero = self.start_urls[1] + estilo
+        genero = self.start_urls[1] + self.estilo
         artistas_genero = genero + '/todosartistas.html'
         request = Request(
             url=artistas_genero, 
@@ -47,25 +47,27 @@ class LetrasSpider(Spider):
             yield request
 
     def parse_album(self, response):
-        albuns = response.css('.cnt-discografia_cd')                  
+        albuns_info = response.css('.cnt-discografia_cd')
         album_dic = {}
-        for album in albuns:
-            url_musica = album.css('li:not([class^="contrib"]) ::attr(href)').get()
+        for info in albuns_info:
+            urls_musica = info.css('li:not([class^="contrib"]) ::attr(href)').getall()
             album_dic = {
                 'nome': response.meta['nome'],
                 'album' : {   
-                   'titulo_album' : album.css('.cnt-discografia_info a ::text').get(),
-                   'ano' : album.css('.cnt-discografia_info span ::text').re(r'.*([1-2][0-9]{3})').group(1)
+                   'titulo_album' : info.css('.cnt-discografia_info a ::text').get(),
+                   'ano' : info.css('.cnt-discografia_info span ::text').re(r'.*([1-2][0-9]{3})')[0]
                 }
             }
             
-            request = Request(
-                url=self.start_urls[0] + url_musica,
-                callback=self.parse_musica
-            )           
-            request.meta['artista'] = album_dic
+            for url in urls_musica:
+                request = Request(
+                    url=self.start_urls[0] + url,
+                    callback=self.parse_musica
+                )
 
-            yield request
+                request.meta['artista'] = album_dic
+
+                yield request
 
     def parse_musica(self, response):
         trad = response.css('.letra-menu a ::attr(data-tt)').get()
@@ -80,5 +82,4 @@ class LetrasSpider(Spider):
                 'letra' : ''.join(verso + '\r\n' for verso in response.css('div.cnt-letra p ::text').getall())
             }
 
-            #yield Musica(musica)
-            yield musica
+            yield Musica(musica)
