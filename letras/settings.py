@@ -15,6 +15,9 @@ SPIDER_MODULES = ['letras.spiders']
 NEWSPIDER_MODULE = 'letras.spiders'
 #LOG_ENABLED = False
 
+MONGO_URI = 'localhost'
+MONGO_DATABASE = 'letras'
+
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 #USER_AGENT = 'letras (+http://www.yourdomain.com)'
@@ -65,9 +68,9 @@ ROBOTSTXT_OBEY = True
 
 # Configure item pipelines
 # See https://doc.scrapy.org/en/latest/topics/item-pipeline.html
-#ITEM_PIPELINES = {
-#    'letras.pipelines.LetrasPipeline': 300,
-#}
+ITEM_PIPELINES = {
+    'letras.pipelines.LetrasPipeline': 300,
+}
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See https://doc.scrapy.org/en/latest/topics/autothrottle.html
