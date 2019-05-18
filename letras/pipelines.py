@@ -1,10 +1,9 @@
-from letras.items import Musica
+from letras.items import Genero
 import pymongo
-import json
 
 class LetrasPipeline(object):
 
-    collection_name = 'letras'
+    collection_name = 'musicas'
 
     def __init__(self, mongo_uri, mongo_db):
         self.mongo_uri = mongo_uri
@@ -14,7 +13,7 @@ class LetrasPipeline(object):
     def from_crawler(cls, crawler):
         return cls(
             mongo_uri=crawler.settings.get('MONGO_URI'),
-            mongo_db=crawler.settings.get('MONGO_DATABASE', 'letras')
+            mongo_db=crawler.settings.get('MONGO_DATABASE', 'letras_db')
         )
 
     def open_spider(self, spider):
@@ -25,9 +24,9 @@ class LetrasPipeline(object):
         self.client.close()
 
     def process_item(self, item, spider):
-        if isinstance(item, Musica):
+        if isinstance(item, Genero):
             instance = self.db.musicas.find_one({"titulo": item["titulo"], "artista": item["artista"]}) 
             if not instance:
-                self.db['musicas'].insert_one(dict(item))
+                self.db[self.collection_name].insert_one(dict(item))
 
         return item

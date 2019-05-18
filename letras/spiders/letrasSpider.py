@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from scrapy import Request, Spider
-from letras.items import Musica
+from letras.items import Genero
 import re
 
 class LetrasSpider(Spider):
@@ -12,8 +12,8 @@ class LetrasSpider(Spider):
     ]
 
     def parse(self, response):
-        genero = self.start_urls[1] + self.estilo
-        artistas_genero = genero + '/todosartistas.html'
+        url_genero = self.start_urls[1] + self.estilo
+        artistas_genero = url_genero + '/todosartistas.html'
         request = Request(
             url=artistas_genero, 
             callback=self.parse_artista
@@ -72,14 +72,15 @@ class LetrasSpider(Spider):
     def parse_musica(self, response):
         trad = response.css('.letra-menu a ::attr(data-tt)').get()
 
-        musica = {}
+        genero = {}
         if(trad is None):
-            musica = {
+            genero = {
+                'genero' : self.estilo,
                 'artista': response.meta['artista']['nome'],
                 'album': response.meta['artista']['album'],
                 'titulo' : response.css('.cnt-head_title h1 ::text').get(),
                 'compositor' : response.css('.letra-info_comp ::text').get(),
-                'letra' : ''.join(verso + '\r\n' for verso in response.css('div.cnt-letra p ::text').getall())
+                'letra' : ''.join(verso + '\n' for verso in response.css('div.cnt-letra p ::text').getall())
             }
 
-            yield Musica(musica)
+            yield Genero(genero)

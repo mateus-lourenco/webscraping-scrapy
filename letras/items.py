@@ -7,7 +7,8 @@
 
 from scrapy import Item, Field
 
-class Musica(Item):    
+class Genero(Item): 
+    genero = Field()   
     artista = Field()
     album = Field()
     titulo = Field()

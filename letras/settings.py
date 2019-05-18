@@ -16,7 +16,7 @@ NEWSPIDER_MODULE = 'letras.spiders'
 #LOG_ENABLED = False
 
 MONGO_URI = 'localhost'
-MONGO_DATABASE = 'letras'
+MONGO_DATABASE = 'letras_db'
 
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
