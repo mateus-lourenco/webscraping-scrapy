@@ -5,13 +5,13 @@ import csv
 
 client = MongoClient('mongodb://localhost:27017/')
 db = client['letras_db']
-musicas = db.musicas.find({})
+musicas = db.musicas_mpb.find({})
 
-with open('letras_dataset2.csv', mode='w', encoding='utf-8') as csv_file:
+with open('letras_mpb.csv', mode='w', encoding='utf-8') as csv_file:
     campos = ['genero','artista','album','ano', 'titulo', 'compositor', 'letra']
     writer = csv.DictWriter(csv_file, fieldnames=campos, delimiter=';')
     writer.writeheader()
-
+    count = 0
 
     for musica in musicas:
 
@@ -31,3 +31,5 @@ with open('letras_dataset2.csv', mode='w', encoding='utf-8') as csv_file:
         }
         
         writer.writerow(linha)
+        count+=1
+    print('{} letras foram capturadas'.format(count))

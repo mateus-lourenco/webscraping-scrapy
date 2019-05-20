@@ -3,7 +3,7 @@ import pymongo
 
 class LetrasPipeline(object):
 
-    collection_name = 'musicas'
+    collection_name = 'musicas_mpb'
 
     def __init__(self, mongo_uri, mongo_db):
         self.mongo_uri = mongo_uri
